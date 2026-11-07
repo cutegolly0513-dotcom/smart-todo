@@ -1,0 +1,999 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MY TASK - 스마트 할 일 관리</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --main: #7467ed;
+  --main-light: #f0eeff;
+  --bg: #f7f8fc;
+  --text: #25243a;
+  --sub: #9292a5;
+  --white: #ffffff;
+  --border: #eeeeF5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button, input, select { font-family: inherit; }
+button { cursor: pointer; }
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* 사이드바 */
+.sidebar {
+  width: 245px;
+  background: white;
+  padding: 35px 22px;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: 800;
+  color: var(--main);
+  margin-bottom: 50px;
+}
+
+.logo span { color: #28263c; }
+
+.menu-title {
+  font-size: 11px;
+  color: #aaa9ba;
+  font-weight: 700;
+  margin: 25px 10px 12px;
+  letter-spacing: 1px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  color: #77778b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.nav:hover, .nav.active {
+  background: var(--main-light);
+  color: var(--main);
+}
+
+.nav .count {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* 메인 */
+.main {
+  flex: 1;
+  padding: 38px 5%;
+  min-width: 0;
+  max-width: 1500px;
+  margin: auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 38px;
+  gap: 15px;
+}
+
+.greeting h1 {
+  font-size: 26px;
+  margin: 0 0 8px;
+}
+
+.greeting p {
+  color: var(--sub);
+  margin: 0;
+  font-size: 14px;
+}
+
+.date-label {
+  color: var(--sub);
+  font-size: 13px;
+  background: white;
+  padding: 12px 17px;
+  border-radius: 12px;
+}
+
+/* 통계 */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  background: white;
+  padding: 23px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+}
+
+.stat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.stat-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--main-light);
+  font-size: 17px;
+}
+
+.stat-number {
+  font-size: 29px;
+  font-weight: 800;
+  margin-top: 15px;
+}
+
+.stat-desc {
+  color: var(--sub);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+/* 진행률 */
+.progress-card {
+  background: linear-gradient(115deg, #7467ed, #9b8cf7);
+  border-radius: 20px;
+  padding: 25px 28px;
+  color: white;
+  margin-bottom: 30px;
+  box-shadow: 0 9px 25px #8175ed30;
+}
+
+.progress-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 17px;
+  font-size: 14px;
+}
+
+.progress-heading strong { font-size: 23px; }
+
+.progress-bg {
+  height: 9px;
+  background: #ffffff45;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: white;
+  width: 0%;
+  border-radius: 20px;
+  transition: width .4s;
+}
+
+/* 할 일 영역 */
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 23px;
+}
+
+.panel {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 25px;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.panel-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.task-count {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+/* 입력 */
+.add-form {
+  display: flex;
+  gap: 9px;
+  margin-bottom: 15px;
+}
+
+.add-form input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: #fafaff;
+  padding: 14px;
+  border-radius: 11px;
+  outline: none;
+  font-size: 14px;
+}
+
+.add-form input:focus,
+.form-row input:focus,
+.form-row select:focus {
+  border-color: var(--main);
+}
+
+.add-btn {
+  background: var(--main);
+  border: none;
+  color: white;
+  border-radius: 11px;
+  padding: 0 19px;
+  font-weight: 700;
+  transition: .2s;
+}
+
+.add-btn:hover { background: #5c50d0; }
+
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 23px;
+}
+
+.form-row label {
+  display: block;
+  font-size: 12px;
+  color: var(--sub);
+  margin-bottom: 7px;
+}
+
+.form-row input, .form-row select {
+  width: 100%;
+  border: 1px solid var(--border);
+  padding: 11px;
+  border-radius: 9px;
+  background: white;
+  outline: none;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* 필터 */
+.filters {
+  display: flex;
+  gap: 7px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 15px;
+  margin-bottom: 13px;
+  overflow-x: auto;
+}
+
+.filter {
+  border: none;
+  background: #f6f6fa;
+  color: #85859a;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.filter.active {
+  background: var(--main-light);
+  color: var(--main);
+  font-weight: 700;
+}
+
+/* 할 일 목록 */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: .2s;
+}
+
+.task:hover {
+  border-color: #d6d0ff;
+  background: #fdfcff;
+}
+
+.task input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--main);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-info { flex: 1; min-width: 0; }
+
+.task-name {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.task.done .task-name {
+  color: #b0b0bf;
+  text-decoration: line-through;
+}
+
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--sub);
+}
+
+.priority {
+  padding: 4px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.high { background: #fff0ef; color: #ed7770; }
+.medium { background: #fff7e9; color: #d89b3d; }
+.low { background: #eaf8f1; color: #4eaa7c; }
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #c2c1ce;
+  font-size: 17px;
+  padding: 6px;
+}
+
+.delete-btn:hover { color: #e56e75; }
+
+.empty {
+  text-align: center;
+  padding: 45px 10px;
+  color: #aaa9ba;
+  font-size: 13px;
+}
+
+.empty div { font-size: 35px; margin-bottom: 12px; }
+
+/* 오른쪽 패널 */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.side-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.side-card h3 {
+  font-size: 15px;
+  margin: 0 0 18px;
+}
+
+.today-date {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--main);
+}
+
+.today-month {
+  color: var(--sub);
+  font-size: 12px;
+  margin-top: 5px;
+  margin-bottom: 18px;
+}
+
+.today-summary {
+  background: var(--main-light);
+  padding: 14px;
+  border-radius: 11px;
+  color: var(--main);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.priority-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 17px;
+  color: #77778b;
+}
+
+.priority-bar {
+  height: 6px;
+  border-radius: 20px;
+  background: #f0eff5;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.priority-bar div {
+  height: 100%;
+  border-radius: 20px;
+}
+
+.high-bar { background: #ed7770; }
+.medium-bar { background: #e8b45e; }
+.low-bar { background: #62b88c; }
+
+.clear-btn {
+  width: 100%;
+  border: 1px solid #f1dfe0;
+  background: white;
+  color: #df777e;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.clear-btn:hover { background: #fff5f5; }
+
+footer {
+  text-align: center;
+  color: #b5b4c2;
+  font-size: 11px;
+  padding: 30px;
+}
+
+/* 모바일 */
+@media(max-width: 1050px) {
+  .content { grid-template-columns: 1fr; }
+  .right-panel { display: grid; grid-template-columns: 1fr 1fr; }
+}
+
+@media(max-width: 700px) {
+  .sidebar {
+    display: none;
+  }
+  .main { padding: 25px 15px; }
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 17px; }
+  .stat-number { font-size: 25px; }
+  .right-panel { grid-template-columns: 1fr; }
+  .topbar { align-items: flex-start; }
+  .greeting h1 { font-size: 21px; }
+  .date-label { font-size: 11px; padding: 10px; }
+  .panel { padding: 17px; }
+  .add-form { flex-wrap: wrap; }
+  .add-form input { flex-basis: 65%; }
+  .add-btn { padding: 0 15px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="logo">MY<span>TASK.</span></div>
+
+    <div class="menu-title">MENU</div>
+
+    <div class="nav active" data-filter="all">
+      <span>▦</span> 전체 할 일
+      <span class="count" id="sideAll">0</span>
+    </div>
+
+    <div class="nav" data-filter="today">
+      <span>☀</span> 오늘의 할 일
+    </div>
+
+    <div class="nav" data-filter="active">
+      <span>◷</span> 진행 중
+    </div>
+
+    <div class="nav" data-filter="completed">
+      <span>✓</span> 완료한 일
+    </div>
+
+    <div class="menu-title">MANAGEMENT</div>
+
+    <div class="nav" data-filter="high">
+      <span>⚑</span> 중요한 일
+    </div>
+
+    <div class="nav" data-filter="overdue">
+      <span>◉</span> 마감일 초과
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+      <div class="greeting">
+        <h1>안녕하세요! 👋</h1>
+        <p>오늘도 계획적인 하루를 시작해 볼까요?</p>
+      </div>
+      <div class="date-label" id="currentDate"></div>
+    </header>
+
+    <section class="stats">
+      <div class="stat-card">
+        <div class="stat-top">
+          전체 할 일
+          <div class="stat-icon">📝</div>
+        </div>
+        <div class="stat-number" id="totalCount">0</div>
+        <div class="stat-desc">등록된 전체 일정</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          완료한 일
+          <div class="stat-icon">✅</div>
+        </div>
+        <div class="stat-number" id="completedCount">0</div>
+        <div class="stat-desc">성공적으로 마친 일정</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          진행 중
+          <div class="stat-icon">⏳</div>
+        </div>
+        <div class="stat-number" id="activeCount">0</div>
+        <div class="stat-desc">아직 완료하지 않은 일정</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          오늘 할 일
+          <div class="stat-icon">📅</div>
+        </div>
+        <div class="stat-number" id="todayCount">0</div>
+        <div class="stat-desc">오늘 마감인 일정</div>
+      </div>
+    </section>
+
+    <section class="progress-card">
+      <div class="progress-heading">
+        <span>✨ 전체 목표 달성률</span>
+        <strong id="progressText">0%</strong>
+      </div>
+      <div class="progress-bg">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </section>
+
+    <section class="content">
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2 id="listTitle">나의 할 일</h2>
+          <span class="task-count" id="listCount">0개의 일정</span>
+        </div>
+
+        <form class="add-form" id="taskForm">
+          <input id="taskInput" type="text"
+                 placeholder="새로운 할 일을 입력하세요..." maxlength="100" required>
+          <button class="add-btn" type="submit">+ 추가하기</button>
+        </form>
+
+        <div class="options">
+          <div class="form-row">
+            <label for="deadline">마감일</label>
+            <input type="date" id="deadline">
+          </div>
+
+          <div class="form-row">
+            <label for="priority">중요도</label>
+            <select id="priority">
+              <option value="medium">보통</option>
+              <option value="high">높음</option>
+              <option value="low">낮음</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filters">
+          <button class="filter active" data-filter="all">전체</button>
+          <button class="filter" data-filter="active">진행 중</button>
+          <button class="filter" data-filter="completed">완료</button>
+          <button class="filter" data-filter="today">오늘</button>
+          <button class="filter" data-filter="high">중요</button>
+          <button class="filter" data-filter="overdue">마감 초과</button>
+        </div>
+
+        <div class="task-list" id="taskList"></div>
+      </div>
+
+      <div class="right-panel">
+
+        <div class="side-card">
+          <h3>📅 오늘의 일정</h3>
+          <div class="today-date" id="todayDay"></div>
+          <div class="today-month" id="todayMonth"></div>
+          <div class="today-summary" id="todaySummary">
+            오늘도 힘내세요!
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>🎯 중요도별 현황</h3>
+
+          <div class="priority-row">
+            <div style="flex:1">
+              <div>높은 중요도</div>
+              <div class="priority-bar"><div class="high-bar" id="highBar"></div></div>
+            </div>
+            <span id="highCount">0개</span>
+          </div>
+
+          <div class="priority-row">
+            <div style="flex:1">
+              <div>보통 중요도</div>
+              <div class="priority-bar"><div class="medium-bar" id="mediumBar"></div></div>
+            </div>
+            <span id="mediumCount">0개</span>
+          </div>
+
+          <div class="priority-row">
+            <div style="flex:1">
+              <div>낮은 중요도</div>
+              <div class="priority-bar"><div class="low-bar" id="lowBar"></div></div>
+            </div>
+            <span id="lowCount">0개</span>
+          </div>
+
+          <button class="clear-btn" id="clearCompleted">
+            완료한 일 모두 삭제
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <footer>MY TASK © 2026 · Make Every Day Count ✨</footer>
+  </main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const STORAGE_KEY = "my_task_manager_v1";
+
+let tasks = [];
+let currentFilter = "all";
+
+const today = () => {
+  const d = new Date();
+  const offset = d.getTimezoneOffset();
+  return new Date(d.getTime() - offset * 60000)
+    .toISOString().slice(0, 10);
+};
+
+const escapeHTML = value => String(value).replace(
+  /[&<>"']/g,
+  c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[c]
+);
+
+function loadTasks() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    tasks = Array.isArray(saved) ? saved.filter(t =>
+      t && typeof t.id === "string" &&
+      typeof t.text === "string" &&
+      typeof t.done === "boolean" &&
+      ["high", "medium", "low"].includes(t.priority)
+    ) : [];
+  } catch {
+    tasks = [];
+  }
+}
+
+function saveTasks() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  } catch {
+    alert("저장 공간이 부족하거나 브라우저 저장이 차단되었습니다.");
+  }
+}
+
+function addTask(text, deadline, priority) {
+  tasks.unshift({
+    id: crypto.randomUUID ? crypto.randomUUID() :
+      String(Date.now()) + Math.random(),
+    text,
+    deadline,
+    priority,
+    done: false,
+    created: Date.now()
+  });
+
+  saveTasks();
+  render();
+}
+
+function toggleTask(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
+  task.done = !task.done;
+  saveTasks();
+  render();
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  saveTasks();
+  render();
+}
+
+function isToday(task) {
+  return task.deadline === today();
+}
+
+function isOverdue(task) {
+  return task.deadline &&
+    task.deadline < today() &&
+    !task.done;
+}
+
+function getFilteredTasks() {
+  let result = tasks.filter(task => {
+    switch (currentFilter) {
+      case "today": return isToday(task);
+      case "active": return !task.done;
+      case "completed": return task.done;
+      case "high": return task.priority === "high" && !task.done;
+      case "overdue": return isOverdue(task);
+      default: return true;
+    }
+  });
+
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+
+  return result.sort((a, b) => {
+    if (a.done !== b.done) return Number(a.done) - Number(b.done);
+    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    }
+    if (!a.deadline) return 1;
+    if (!b.deadline) return -1;
+    return a.deadline.localeCompare(b.deadline);
+  });
+}
+
+function renderTasks() {
+  const list = $("taskList");
+  const filtered = getFilteredTasks();
+
+  $("listCount").textContent = filtered.length + "개의 일정";
+
+  const titles = {
+    all: "나의 할 일",
+    today: "오늘의 할 일",
+    active: "진행 중인 일",
+    completed: "완료한 일",
+    high: "중요한 일",
+    overdue: "마감일 초과"
+  };
+
+  $("listTitle").textContent = titles[currentFilter];
+
+  if (!filtered.length) {
+    list.innerHTML = `
+      <div class="empty">
+        <div>🌱</div>
+        <strong>아직 일정이 없어요!</strong>
+        <p>새로운 할 일을 추가해 보세요.</p>
+      </div>`;
+    return;
+  }
+
+  const priorityNames = {
+    high: "높음",
+    medium: "보통",
+    low: "낮음"
+  };
+
+  list.innerHTML = filtered.map(task => {
+    const deadlineText = task.deadline
+      ? "📅 " + escapeHTML(task.deadline) +
+        (isOverdue(task) ? " (기한 초과)" : "")
+      : "📅 마감일 없음";
+
+    return `
+      <div class="task ${task.done ? "done" : ""}">
+        <input type="checkbox"
+          aria-label="완료 여부"
+          ${task.done ? "checked" : ""}
+          onchange="toggleTask('${task.id}')">
+
+        <div class="task-info">
+          <div class="task-name">${escapeHTML(task.text)}</div>
+          <div class="task-meta">
+            <span class="priority ${task.priority}">
+              ${priorityNames[task.priority]}
+            </span>
+            <span>${deadlineText}</span>
+          </div>
+        </div>
+
+        <button class="delete-btn"
+          aria-label="삭제"
+          onclick="deleteTask('${task.id}')">✕</button>
+      </div>`;
+  }).join("");
+}
+
+function renderStats() {
+  const total = tasks.length;
+  const completed = tasks.filter(t => t.done).length;
+  const active = total - completed;
+  const todayTasks = tasks.filter(isToday).length;
+
+  const percent = total
+    ? Math.round(completed / total * 100)
+    : 0;
+
+  $("totalCount").textContent = total;
+  $("completedCount").textContent = completed;
+  $("activeCount").textContent = active;
+  $("todayCount").textContent = todayTasks;
+
+  $("sideAll").textContent = total;
+
+  $("progressText").textContent = percent + "%";
+  $("progressFill").style.width = percent + "%";
+
+  const high = tasks.filter(t => t.priority === "high" && !t.done).length;
+  const medium = tasks.filter(t => t.priority === "medium" && !t.done).length;
+  const low = tasks.filter(t => t.priority === "low" && !t.done).length;
+
+  const max = Math.max(high, medium, low, 1);
+
+  $("highCount").textContent = high + "개";
+  $("mediumCount").textContent = medium + "개";
+  $("lowCount").textContent = low + "개";
+
+  $("highBar").style.width = high / max * 100 + "%";
+  $("mediumBar").style.width = medium / max * 100 + "%";
+  $("lowBar").style.width = low / max * 100 + "%";
+
+  $("todaySummary").innerHTML =
+    `오늘 마감인 일정은 <strong>${todayTasks}개</strong>입니다.<br>
+    완료한 일정은 <strong>${tasks.filter(t => isToday(t) && t.done).length}개</strong>입니다.`;
+}
+
+function renderDate() {
+  const now = new Date();
+
+  $("currentDate").textContent =
+    now.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long"
+    });
+
+  $("todayDay").textContent = now.getDate();
+  $("todayMonth").textContent =
+    now.getFullYear() + "년 " + (now.getMonth() + 1) + "월";
+}
+
+function render() {
+  renderTasks();
+  renderStats();
+
+  document.querySelectorAll("[data-filter]").forEach(el => {
+    el.classList.toggle(
+      "active",
+      el.dataset.filter === currentFilter
+    );
+  });
+}
+
+$("taskForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const text = $("taskInput").value.trim();
+  if (!text) return;
+
+  addTask(
+    text,
+    $("deadline").value,
+    $("priority").value
+  );
+
+  $("taskInput").value = "";
+  $("deadline").value = "";
+  $("priority").value = "medium";
+  $("taskInput").focus();
+});
+
+document.querySelectorAll("[data-filter]").forEach(el => {
+  el.addEventListener("click", () => {
+    currentFilter = el.dataset.filter;
+    render();
+  });
+});
+
+$("clearCompleted").addEventListener("click", () => {
+  const count = tasks.filter(t => t.done).length;
+
+  if (!count) {
+    alert("삭제할 완료 일정이 없습니다.");
+    return;
+  }
+
+  if (confirm(`완료한 일정 ${count}개를 모두 삭제할까요?`)) {
+    tasks = tasks.filter(t => !t.done);
+    saveTasks();
+    render();
+  }
+});
+
+// 초기 실행
+loadTasks();
+renderDate();
+render();
+
+// 자정에 날짜가 바뀌면 화면 갱신
+setInterval(() => {
+  renderDate();
+  render();
+}, 60000);
+</script>
+</body>
+</html>
